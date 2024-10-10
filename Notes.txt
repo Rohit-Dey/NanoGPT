@@ -1,0 +1,43 @@
+ChatGPT is a language model that predicts sequences of words, characters, or tokens. It understands how words typically relate to one another in the English language.
+
+What is the neural network under the hood that models the sequence of these words? 
+GPT stands for Generative Pre-trained Transformer. The Transformer is the neural network architecture that performs the complex computations and processing behind the scenes.
+
+Responses in ChatGPT are generated on a token-by-token basis, where tokens represent smaller subword segments. This means they function at a level that's not purely word-based,
+but rather at a chunk level of words. However, in our model, we process it character by character.
+
+We can consider our vocabulary as a set of potential characters that the model can recognize or generate.
+
+When people refer to tokenization, they mean the process of transforming raw text, represented as a string, into a sequence of integers based on a predefined vocabulary of possible elements.
+
+This is just one of many potential encodings or types of tokenizers, and it’s quite basic. There are various other schemas that have been developed in practice. 
+For instance, Google employs a tokenizer called SentencePiece, which also converts text into integers but follows a different schema and uses a distinct vocabulary. 
+SentencePiece operates at the subword level, meaning it doesn’t encode complete words or individual characters but rather subword units. This subword approach is commonly adopted. 
+Additionally, OpenAI has a library called tiktoken that utilizes a byte pair encoding tokenizer, which is the method used by GPT.
+
+Essentially, there is a trade-off between codebook size and sequence length. This means you can opt for very long sequences of integers with a small vocabulary, or you can choose shorter sequences with a larger vocabulary. 
+In practice, people commonly use subword encodings to strike a balance between these options.
+
+We want to begin inputting these text sequences or integer sequences into the Transformer for it to learn and recognize patterns. It's important to note that we won’t be feeding the entire text into 
+the Transformer all at once, as that would be computationally expensive and impractical. Instead, when training a Transformer with these datasets, we work with smaller portions of the data. 
+We randomly sample small chunks from the training set and train on these segments one at a time. Each chunk has a specific length, with a defined maximum length, often referred to as block size in the code, 
+though it may also be called context length in other contexts.
+
+We train on all eight examples, utilizing contexts ranging from one to the maximum block size. This approach is not merely for computational efficiency, nor is it just because we already have the sequences available. 
+Instead, it is a deliberate strategy to familiarize the Transformer Network with a wide range of contexts. By exposing the model to contexts from as small as one to the full block size—and everything in between—we 
+prepare it for more effective inference later on. This means that during the sampling process, we can start with just a single character of context, enabling the Transformer to predict the next character based on 
+contexts from one up to the full block size.
+
+We've examined the time dimension of the tensors feeding into the Transformer, but there's one more dimension to consider: the batch dimension. When sampling text chunks, we will feed multiple batches of text stacked 
+in a single tensor into the Transformer. This approach is for efficiency, as it keeps the GPUs engaged, leveraging their strength in parallel data processing. Each chunk is processed independently without interaction, 
+so let’s generalize this by introducing the batch dimension.
+
+Once we obtain the logits, we concentrate only on the last time step. Instead of maintaining the full shape of B x T x C, we extract the last element along the time dimension, which corresponds to the predictions 
+for the next step. This gives us the logits, which we then convert to probabilities using softmax. Finally, we use `torch.multinomial` to sample from these probabilities.
+
+Adam is a more advanced and popular optimizer that works well. A typical good setting for the learning rate is around 3E-4, but for very small networks like this one, much higher learning rates can be effective.
+
+This is the simplest possible model. Currently, the tokens do not interact; they only consider the last character to predict the next one. Now, these tokens need to communicate and incorporate the broader context to improve their predictions. 
+This will initiate the Transformer model.
+
+A "bag of words" refers to a method of averaging words, where each of the eight locations holds a word, and we simply average them together. 
