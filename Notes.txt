@@ -41,3 +41,30 @@ This is the simplest possible model. Currently, the tokens do not interact; they
 This will initiate the Transformer model.
 
 A "bag of words" refers to a method of averaging words, where each of the eight locations holds a word, and we simply average them together. 
+
+We encode not only the identity of tokens but also their positions. Accordingly, there will be a second position embedding table, which is an embedding of block size by an embedding dimension. 
+Each position from zero to block size minus one will have its own embedding vector.
+
+Different tokens find other tokens more or less interesting based on data dependency. For instance, a vowel might seek consonants from its past and want information about them to flow in a data-dependent manner. 
+Self-attention addresses this by having each token emit two vectors: a query, representing what it seeks, and a key, indicating what it contains. Affinities between tokens are determined through the dot product 
+of the keys and queries; when a query aligns closely with a key, the interaction increases, allowing the token to learn more about that specific token compared to others in the sequence.
+
+You can think of X as kind of like private information to this token, so I'm a fifth token at some and I have some identity and my information is kept in Vector X and now for the purposes of the single head here's 
+what I'm interested in(Q) here's what I have(K) and if you find me interesting here's what I will communicate to you and that's stored in V and so V is the thing that gets aggregated for the purposes of this
+single head.
+
+This is called self-attention because the keys, queries, and values all originate from the same source, X. In this case, the nodes are self-attending. However, attention is generally more versatile. For instance, in encoder-decoder transformers, 
+queries can come from X while keys and values may come from a separate external source, such as encoder blocks that provide additional context. Cross attention is utilized when we need to extract information from an external source, while self-attention 
+occurs when nodes interact with each other. In this instance, we are using self-attention.
+
+In the context of using softmax in neural networks, it's crucial to ensure that the initial weight values are appropriately set to avoid overly extreme distributions. At initialization, we want the weights to be fairly diffuse; that is, their values should 
+be spread out rather than concentrated. This is important because, when softmax is applied to a set of weights that take on very high positive or very low negative values, it can lead to sharp outputs that degenerate into one-hot vectors.
+This behavior can be problematic, particularly at the initialization phase. If the values are too extreme and lead to sharp peaks in the softmax output, the network might rely heavily on information from a single node. Ideally, we want each node to aggregate 
+information from multiple sources, which allows for a more balanced and effective learning process.
+Therefore, controlling the variance at initialization through appropriate scaling of the weights is essential. This scaling helps ensure that the initial distribution does not produce a softmax output that is too peaky, thereby promoting a more effective and 
+diverse aggregation of information across the network.
+
+The lower triangular matrix, commonly referred to as 'tril,' is not a parameter of the module in PyTorch. Instead, it is treated as a buffer, which is a type of stateful tensor that does not require gradient updates. To assign this buffer to the module, 
+you should use the register_buffer method. This approach ensures that the lower triangular matrix is part of the module's state while not being a learnable parameter.
+
+The self attention can't tolerate very very high learning rates and then I also increased number of iterations because the learning rate is lower.
