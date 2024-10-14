@@ -68,3 +68,31 @@ The lower triangular matrix, commonly referred to as 'tril,' is not a parameter 
 you should use the register_buffer method. This approach ensures that the lower triangular matrix is part of the module's state while not being a learnable parameter.
 
 The self attention can't tolerate very very high learning rates and then I also increased number of iterations because the learning rate is lower.
+
+Multi-head attention applies multiple attention heads in parallel, allowing the model to focus on different aspects of the input simultaneously. The results from these heads are then concatenated and transformed, enabling the model to capture a richer representation of the data.
+This concept is somewhat analogous to group convolutions. Rather than performing a single large convolution operation, we break it down into smaller, grouped convolutions. This idea is employed in multi-headed self-attention, where we utilize multiple attention heads instead of a single one. 
+So, in this case, we essentially implement several self-attention mechanisms in parallel, which allows for capturing different aspects of the input data simultaneously.
+
+Self-attention serves as a communication mechanism that aggregates contextual information across the input data. After this process gathers insights, the feed-forward network processes each element individually, applying transformations to refine and enhance the representations. 
+In this way, self-attention focuses on relationships within the data, while the feed-forward network enables the model to interpret and act on that information more effectively.
+
+The computation flows from top to bottom, utilizing a residual pathway. Within this structure, you can diverge from the residual pathway to perform additional computations and then rejoin the residual pathway through addition. This means that the transformation from inputs to targets relies primarily on addition operations.
+
+This approach is advantageous because, during backpropagation the addition operation distributes gradients equally across both branches that feed into it. Consequently, the supervision signals (or gradients from the loss) traverse each addition node, reaching the input while also branching out into the residual blocks. 
+Essentially, there exists a gradient "superhighway" that allows direct access from supervision to the input, ensuring an efficient flow of gradients without obstruction.
+
+Furthermore, the residual blocks are typically initialized to contribute very little, if anything, to the residual pathway at the outset. They are designed this way so that, initially, they appear almost non-intrusive. However, as optimization progresses, 
+these blocks gradually become active and start to contribute meaningfully. This initialization strategy allows for an unimpeded flow of gradients from supervision to the inputs, which dramatically facilitates the optimization process.
+
+In Layer Normalisation we normalise each row unlike BatchNorm that normalises each column.
+
+In the original paper, the ADD and normalization were applied after the transformation. However, it has become more common to apply layer normalization before the transformation. This results in a rearrangement of the layer normalization process, 
+leading to what's known as the "pre-norm" formulation.
+
+Dropout is a regularization technique introduced in the 2014 paper "Dropout: A Simple Way to Prevent Neural Networks from Overfitting" by Nitish Srivastava and co-authors. The method involves randomly deactivating a subset of neurons during each training iteration, effectively setting their outputs to zero.
+
+This random deactivation occurs during both the forward and backward passes, which means that each training step uses a different configuration of active neurons. As a result, dropout trains an ensemble of diverse sub-networks, each learning to make predictions based on various combinations of neurons.
+
+During testing, all neurons are fully active, allowing the model to utilize the full network’s capacity. You can think of this at test time as merging the knowledge learned from all the sub-networks into a single model.
+
+It's essential to recognize dropout primarily as an effective regularization technique.
